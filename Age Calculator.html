@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Age Calculator with From/To Option</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            text-align: center;
+            margin-top: 50px;
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            width: 450px;
+            margin: auto;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="date"] {
+            padding: 10px;
+            width: 90%;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #1976d2;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #115293;
+        }
+
+        .result {
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Age Calculator</h2>
+
+    <label for="fromDate">From (Date of Birth):</label><br>
+    <input type="date" id="fromDate" max=""><br>
+
+    <input type="checkbox" id="tillToday" checked> Calculate till today<br>
+
+    <label for="toDate">Custom To Date:</label><br>
+    <input type="date" id="toDate" max=""><br>
+
+    <button onclick="calculateAge()">Calculate Age</button>
+
+    <div class="result" id="output"></div>
+</div>
+
+<script>
+// Set max date for date pickers to today
+window.onload = function() {
+    var todayStr = new Date().toISOString().split('T')[0];
+    document.getElementById("fromDate").setAttribute('max', todayStr);
+    document.getElementById("toDate").setAttribute('max', todayStr);
+};
+
+// Enable/disable custom date picker based on checkbox
+document.getElementById("tillToday").addEventListener("change", function() {
+    document.getElementById("toDate").disabled = this.checked;
+});
+
+function calculateAge() {
+    var fromInput = document.getElementById("fromDate").value;
+    var tillTodayChecked = document.getElementById("tillToday").checked;
+    var toInput = document.getElementById("toDate").value;
+
+    if (!fromInput) {
+        document.getElementById("output").innerHTML = "Please select From date.";
+        return;
+    }
+
+    var fromDate = new Date(fromInput);
+    var endDate = tillTodayChecked ? new Date() : new Date(toInput);
+
+    if (!tillTodayChecked && !toInput) {
+        document.getElementById("output").innerHTML = "Please select a To date or tick 'Calculate till today'.";
+        return;
+    }
+
+    if (fromDate > endDate) {
+        document.getElementById("output").innerHTML = "From date cannot be after To date!";
+        return;
+    }
+
+    // Age calculation
+    var years = endDate.getFullYear() - fromDate.getFullYear();
+    var months = endDate.getMonth() - fromDate.getMonth();
+    var days = endDate.getDate() - fromDate.getDate();
+
+    if (days < 0) {
+        months--;
+        days += new Date(endDate.getFullYear(), endDate.getMonth(), 0).getDate();
+    }
+
+    if (months < 0) {
+        years--;
+        months += 12;
+    }
+
+    var outputText = tillTodayChecked
+        ? "Age till today: "
+        : "Age on " + endDate.toDateString() + ": ";
+
+    outputText += years + " years, " + months + " months, " + days + " days.";
+
+    document.getElementById("output").innerHTML = outputText;
+}
+</script>
+
+</body>
+</html>
