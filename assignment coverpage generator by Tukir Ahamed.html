@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cover Page Generator - HAU</title>
+    <style>
+        body { font-family: 'Times New Roman', Times, serif; background-color: #f4f7f6; margin: 0; padding: 20px; font-size: 12pt; }
+        
+        .no-print-zone { 
+            max-width: 850px; margin: 0 auto 30px auto; background: white; 
+            padding: 25px; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            border-top: 5px solid #27ae60; 
+        }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 12px; }
+        label { font-weight: bold; font-size: 10pt; color: #555; display: block; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; font-family: Arial, sans-serif; font-size: 10pt; }
+        
+        #page-content { 
+            width: 210mm; height: 297mm; padding: 20mm 25.4mm; margin: 0 auto; 
+            background: white; box-sizing: border-box; display: flex; 
+            flex-direction: column; align-items: center; text-align: center; 
+            color: black; overflow: hidden; position: relative;
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        .assign-header { font-size: 14pt; margin-bottom: 5px; }
+        .topic-title { font-size: 18pt; font-weight: bold; margin-bottom: 20px; line-height: 1.2; text-transform: uppercase; min-height: 1.2em; }
+        #logo-view { height: 160px; width: auto; margin-bottom: 25px; object-fit: contain; }
+        .course-details { font-size: 14pt; font-weight: bold; margin-bottom: 30px; line-height: 1.8; }
+
+        .date-section { display: flex; justify-content: space-between; width: 100%; margin-bottom: 30px; }
+        .date-box { border: 1.5px solid black; width: 46%; }
+        .date-head { border-bottom: 1.5px solid black; font-weight: bold; padding: 6px; font-size: 11pt; }
+        .date-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+        .date-grid span { border-right: 1.5px solid black; padding: 8px 0; font-size: 11pt; display: flex; align-items: center; justify-content: center;}
+        .date-grid span:last-child { border-right: none; }
+
+        .info-table { 
+            width: 100%; 
+            border-collapse: collapse; 
+            margin-bottom: 30px; 
+            text-align: left; 
+            table-layout: fixed; 
+        }
+        .info-table th, .info-table td { border: 1.5px solid black; padding: 12px; vertical-align: top; font-size: 11pt; line-height: 1.4; }
+        .info-table th { font-weight: bold; text-align: center; background: none; }
+
+        /* Correction: Removed text-transform: uppercase to allow Sentence case */
+        #dispName { font-weight: bold; font-size: 13pt; }
+
+        .footer-area { margin-top: auto; font-size: 16pt; font-weight: bold; line-height: 1.3; padding-bottom: 5mm; }
+
+        .dl-btn { 
+            background: #27ae60; color: white; padding: 15px; border: none; 
+            border-radius: 6px; cursor: pointer; font-size: 18px; font-weight: bold; 
+            width: 100%; margin-top: 10px; transition: 0.3s; 
+        }
+        .dl-btn:hover { background: #219150; }
+
+        @media print {
+            body { background: none; padding: 0; }
+            .no-print-zone { display: none; }
+            #page-content { margin: 0; border: none; box-shadow: none; width: 100%; height: 100%; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="no-print-zone">
+    <h3>Cover Page Input Panel</h3>
+    
+    <label>University Logo:</label>
+    <input type="file" id="logoIn" accept="image/*" style="margin-bottom: 15px;">
+
+    <div class="grid">
+        <div>
+            <label>Assignment Topic:</label>
+            <input type="text" id="inTopic" placeholder="Enter Topic" oninput="update()">
+        </div>
+        <div>
+            <label>Course Title:</label>
+            <input type="text" id="inCourseTitle" placeholder="Enter Course Title" oninput="update()">
+        </div>
+    </div>
+
+    <div class="grid">
+        <div>
+            <label>Course Code:</label>
+            <input type="text" id="inCourseCode" placeholder="Enter Course Code" oninput="update()">
+        </div>
+        <div style="display: flex; gap: 10px;">
+           <div style="flex: 1;">
+               <label>Date of Assigned:</label>
+               <input type="date" id="inDatePerf" onchange="update()">
+           </div>
+           <div style="flex: 1;">
+               <label>Date of Sub.:</label>
+               <input type="date" id="inDateSub" onchange="update()">
+           </div>
+        </div>
+    </div>
+
+    <hr>
+    <h4>Student Information (Submitted By)</h4>
+    <div class="grid">
+        <div>
+            <label>Student Name (Bold):</label>
+            <input type="text" id="stuName" placeholder="Full Name" oninput="update()">
+        </div>
+        <div>
+            <label>ID No.:</label>
+            <input type="text" id="stuID" placeholder="ID Number" oninput="update()">
+        </div>
+    </div>
+    <div class="grid">
+        <input type="text" id="stuReg" placeholder="Reg. No." oninput="update()">
+        <input type="text" id="stuSession" placeholder="Session" oninput="update()">
+    </div>
+    <div class="grid">
+        <input type="text" id="stuLevel" placeholder="Level" oninput="update()">
+        <input type="text" id="stuSemester" placeholder="Semester" oninput="update()">
+    </div>
+    <div class="input-group" style="margin-bottom: 15px;">
+        <label>Student's Faculty:</label>
+        <input type="text" id="stuFaculty" placeholder="Enter Faculty" oninput="update()">
+    </div>
+
+    <hr>
+    <div class="input-group">
+        <label>Select Footer Faculty:</label>
+        <select id="footerFacSelect" onchange="update()">
+            <option value="">-- Choose Faculty --</option>
+            <option value="Faculty of Veterinary Medicine and Animal Science">Faculty of Veterinary Medicine and Animal Science</option>
+            <option value="Faculty of Fisheries">Faculty of Fisheries</option>
+            <option value="Faculty of Agriculture">Faculty of Agriculture</option>
+            <option value="Faculty of Science and Technology">Faculty of Science and Technology</option>
+        </select>
+    </div>
+
+    <button class="dl-btn" onclick="window.print()">Download PDF / Print</button>
+</div>
+
+<div id="page-content">
+    <div class="assign-header">An Assignment on</div>
+    <div class="topic-title" id="outTopic"></div>
+    
+    <img id="logo-view" src="Logo.jpg" alt="[Upload Logo]">
+
+    <div class="course-details">
+        Course Title: <span id="outCourseTitle"></span><br>
+        Course Code: <span id="outCourseCode"></span>
+    </div>
+
+    <div class="date-section">
+        <div class="date-box">
+            <div class="date-head">Date of Assigned</div>
+            <div class="date-grid" id="outDatePerf"><span>00</span><span>00</span><span>0000</span></div>
+        </div>
+        <div class="date-box">
+            <div class="date-head">Date of Submission</div>
+            <div class="date-grid" id="outDateSub"><span>00</span><span>00</span><span>0000</span></div>
+        </div>
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <th>Submitted By</th>
+            <th>Submitted To</th>
+        </tr>
+        <tr>
+            <td id="outSubBy">
+                <span id="dispName"></span><br>
+                <strong>ID No.:</strong> <span id="dispID"></span><br>
+                <strong>Reg. No.:</strong> <span id="dispReg"></span><br>
+                <strong>Session:</strong> <span id="dispSession"></span><br>
+                <strong>Level:</strong> <span id="dispLevel"></span>, <strong>Semester:</strong> <span id="dispSem"></span><br>
+                <strong>Faculty:</strong> <span id="dispFac"></span>
+            </td>
+            <td>
+                <strong>Tukir Ahamed</strong><br>
+                Lecturer<br>
+                Section of Agricultural Economics<br>
+                Department of Allied Sciences<br>
+                Faculty of Science and Technology<br>
+                Habiganj Agricultural University
+            </td>
+        </tr>
+    </table>
+
+    <div class="footer-area">
+        <div id="outFooterFaculty"></div>
+        <div>Habiganj Agricultural University</div>
+    </div>
+</div>
+
+<script>
+    document.getElementById('logoIn').addEventListener('change', function(e) {
+        const reader = new FileReader();
+        reader.onload = function() {
+            document.getElementById('logo-view').src = reader.result;
+        };
+        reader.readAsDataURL(e.target.files[0]);
+    });
+
+    function update() {
+        document.getElementById('outTopic').innerText = document.getElementById('inTopic').value;
+        document.getElementById('outCourseTitle').innerText = document.getElementById('inCourseTitle').value;
+        document.getElementById('outCourseCode').innerText = document.getElementById('inCourseCode').value;
+
+        document.getElementById('dispName').innerText = document.getElementById('stuName').value;
+        document.getElementById('dispID').innerText = document.getElementById('stuID').value;
+        document.getElementById('dispReg').innerText = document.getElementById('stuReg').value;
+        document.getElementById('dispSession').innerText = document.getElementById('stuSession').value;
+        document.getElementById('dispLevel').innerText = document.getElementById('stuLevel').value;
+        document.getElementById('dispSem').innerText = document.getElementById('stuSemester').value;
+        document.getElementById('dispFac').innerText = document.getElementById('stuFaculty').value;
+        
+        // Footer Update from Dropdown
+        document.getElementById('outFooterFaculty').innerText = document.getElementById('footerFacSelect').value;
+
+        formatDate(document.getElementById('inDatePerf').value, 'outDatePerf');
+        formatDate(document.getElementById('inDateSub').value, 'outDateSub');
+    }
+
+    function formatDate(val, targetId) {
+        if (!val) {
+            document.getElementById(targetId).innerHTML = `<span>00</span><span>00</span><span>0000</span>`;
+            return;
+        }
+        const [y, m, d] = val.split('-');
+        document.getElementById(targetId).innerHTML = `<span>${d}</span><span>${m}</span><span>${y}</span>`;
+    }
+</script>
+
+</body>
+</html>
