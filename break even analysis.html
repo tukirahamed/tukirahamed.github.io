@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Break-Even Analysis Calculator with Graph</title>
+
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .container {
+            background: white;
+            width: 450px;
+            margin: 40px auto;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        input {
+            width: 90%;
+            padding: 8px;
+            margin: 5px 0;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px 0;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        .result {
+            text-align: left;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .warning {
+            color: red;
+            font-weight: bold;
+        }
+
+        .profit {
+            color: green;
+            font-weight: bold;
+        }
+
+        canvas {
+            margin-top: 25px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Break-Even Calculator with Graph</h2>
+
+    <input type="number" id="fixedCost" placeholder="Fixed Cost (FC)">
+    <input type="number" id="variableCost" placeholder="Variable Cost per Unit (VC)">
+    <input type="number" id="price" placeholder="Selling Price per Unit (P)">
+    <input type="number" id="quantity" placeholder="Actual Quantity Produced (Optional)">
+
+    <button onclick="calculate()">Calculate</button>
+
+    <div class="result" id="output"></div>
+
+    <canvas id="breakEvenChart" width="400" height="250"></canvas>
+</div>
+
+<script>
+let chart; // global chart variable
+
+function calculate() {
+    var FC = parseFloat(document.getElementById("fixedCost").value);
+    var VC = parseFloat(document.getElementById("variableCost").value);
+    var P = parseFloat(document.getElementById("price").value);
+    var Q = parseFloat(document.getElementById("quantity").value);
+
+    if (isNaN(FC) || isNaN(VC) || isNaN(P)) {
+        document.getElementById("output").innerHTML =
+        "<span class='warning'>Please enter valid numbers for FC, VC, and P.</span>";
+        return;
+    }
+
+    if (P <= VC) {
+        document.getElementById("output").innerHTML =
+        "<span class='warning'>Selling price must be greater than variable cost.</span>";
+        return;
+    }
+
+    var contributionMargin = P - VC;
+    var BEQ = FC / contributionMargin;
+    var BESales = BEQ * P;
+
+    var resultHTML = "";
+    resultHTML += "<strong>Contribution Margin per Unit:</strong> " + contributionMargin.toFixed(2) + "<br>";
+    resultHTML += "<strong>Break-even Quantity:</strong> " + BEQ.toFixed(2) + " units<br>";
+    resultHTML += "<strong>Break-even Sales Revenue:</strong> " + BESales.toFixed(2) + "<br><br>";
+
+    // Interpretation
+    resultHTML += "<strong>Interpretation:</strong><br>";
+    resultHTML += "Sell at least <b>" + BEQ.toFixed(2) + " units</b> to cover costs.<br>";
+    resultHTML += "Below → Loss | Above → Profit<br><br>";
+
+    // Risk warning
+    if (contributionMargin < 0.2 * P) {
+        resultHTML += "<span class='warning'>Warning: Low contribution margin. High risk!</span><br><br>";
+    }
+
+    // Profit/Loss if quantity provided
+    if (!isNaN(Q)) {
+        var totalRevenue = P * Q;
+        var totalCost = FC + (VC * Q);
+        var profit = totalRevenue - totalCost;
+
+        resultHTML += "<strong>Profit/Loss at " + Q + " units:</strong><br>";
+
+        if (profit > 0) {
+            resultHTML += "<span class='profit'>Profit = " + profit.toFixed(2) + "</span><br><br>";
+        } else if (profit < 0) {
+            resultHTML += "<span class='warning'>Loss = " + profit.toFixed(2) + "</span><br><br>";
+        } else {
+            resultHTML += "No Profit, No Loss.<br><br>";
+        }
+    }
+
+    document.getElementById("output").innerHTML = resultHTML;
+
+    // Prepare data for chart
+    var maxQ = Math.max(BEQ * 1.5, Q ? Q * 1.2 : BEQ * 1.5);
+    var labels = [];
+    var totalCostData = [];
+    var totalRevenueData = [];
+
+    for (let i = 0; i <= maxQ; i += Math.round(maxQ / 50)) {
+        labels.push(i);
+        totalCostData.push(FC + VC * i);
+        totalRevenueData.push(P * i);
+    }
+
+    // Remove old chart if exists
+    if (chart) chart.destroy();
+
+    var ctx = document.getElementById('breakEvenChart').getContext('2d');
+    chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Total Cost',
+                    data: totalCostData,
+                    borderColor: 'red',
+                    fill: false,
+                    tension: 0.1
+                },
+                {
+                    label: 'Total Revenue',
+                    data: totalRevenueData,
+                    borderColor: 'green',
+                    fill: false,
+                    tension: 0.1
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { position: 'top' },
+                title: { display: true, text: 'Break-Even Graph' }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Quantity (Units)' } },
+                y: { title: { display: true, text: 'Amount (Currency)' } }
+            }
+        }
+    });
+}
+</script>
+
+</body>
+</html>
