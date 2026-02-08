@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Break-Even Analysis Calculator</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin-top: 40px;
+            background-color: #f4f6f8;
+        }
+
+        .container {
+            background: white;
+            width: 400px;
+            margin: auto;
+            padding: 25px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        h2 {
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 8px;
+            margin: 6px 0;
+            width: 90%;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin-top: 10px;
+            background-color: #2e7d32;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        button:hover {
+            background-color: #1b5e20;
+        }
+
+        .result {
+            margin-top: 20px;
+            text-align: left;
+            font-size: 15px;
+        }
+
+        .warning {
+            color: red;
+            font-weight: bold;
+        }
+
+        .profit {
+            color: green;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Break-Even Analysis Calculator</h2>
+
+<input type="number" id="fixedCost" placeholder="Fixed Cost (FC)">
+<input type="number" id="variableCost" placeholder="Variable Cost per Unit (VC)">
+<input type="number" id="price" placeholder="Selling Price per Unit (P)">
+<input type="number" id="quantity" placeholder="Actual Quantity Produced (Optional)">
+
+<button onclick="calculate()">Calculate</button>
+
+<div class="result" id="output"></div>
+
+</div>
+
+<script>
+function calculate() {
+
+    var FC = parseFloat(document.getElementById("fixedCost").value);
+    var VC = parseFloat(document.getElementById("variableCost").value);
+    var P = parseFloat(document.getElementById("price").value);
+    var Q = parseFloat(document.getElementById("quantity").value);
+
+    if (isNaN(FC) || isNaN(VC) || isNaN(P)) {
+        document.getElementById("output").innerHTML =
+        "<span class='warning'>Please enter valid numbers for FC, VC, and P.</span>";
+        return;
+    }
+
+    if (P <= VC) {
+        document.getElementById("output").innerHTML =
+        "<span class='warning'>Selling price must be greater than variable cost.</span>";
+        return;
+    }
+
+    var contributionMargin = P - VC;
+    var BEQ = FC / contributionMargin;
+    var BESales = BEQ * P;
+
+    var resultHTML = "";
+
+    resultHTML += "<strong>Contribution Margin per Unit:</strong> " + contributionMargin.toFixed(2) + "<br>";
+    resultHTML += "<strong>Break-even Quantity:</strong> " + BEQ.toFixed(2) + " units<br>";
+    resultHTML += "<strong>Break-even Sales Revenue:</strong> " + BESales.toFixed(2) + "<br><br>";
+
+    resultHTML += "<strong>Interpretation:</strong><br>";
+    resultHTML += "The business must sell at least <b>" + BEQ.toFixed(2) + 
+                  " units</b> to cover all fixed and variable costs.<br>";
+    resultHTML += "Below this level → Loss.<br>";
+    resultHTML += "Above this level → Profit.<br><br>";
+
+    // Risk indicator
+    if (contributionMargin < (0.2 * P)) {
+        resultHTML += "<span class='warning'>Warning: Low contribution margin. Business is high risk.</span><br><br>";
+    }
+
+    // Profit/Loss calculation if quantity provided
+    if (!isNaN(Q)) {
+        var totalRevenue = P * Q;
+        var totalCost = FC + (VC * Q);
+        var profit = totalRevenue - totalCost;
+
+        resultHTML += "<strong>Profit/Loss at " + Q + " units:</strong><br>";
+
+        if (profit > 0) {
+            resultHTML += "<span class='profit'>Profit = " + profit.toFixed(2) + "</span>";
+        } else if (profit < 0) {
+            resultHTML += "<span class='warning'>Loss = " + profit.toFixed(2) + "</span>";
+        } else {
+            resultHTML += "No Profit, No Loss.";
+        }
+    }
+
+    document.getElementById("output").innerHTML = resultHTML;
+}
+</script>
+
+</body>
+</html>
