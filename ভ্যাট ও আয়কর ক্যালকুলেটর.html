@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ভ্যাট ও আয়কর ক্যালকুলেটর</title>
+<style>
+  :root {
+    --bg: #f8f6f1;
+    --surface: #ffffff;
+    --border: #e2ddd5;
+    --text-primary: #1a1714;
+    --text-secondary: #6b6560;
+    --text-muted: #9e9890;
+    --accent: #2d5016;
+    --vat-color: #1a3a5c;
+    --vat-light: #deeaf7;
+    --tax-color: #5c1a1a;
+    --tax-light: #f7dede;
+    --result-bg: #1a1714;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --radius: 12px;
+    --font-bn: 'SutonnyMJ', 'Kalpurush', 'SolaimanLipi', serif;
+    --font-en: 'Times New Roman', Times, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  html { font-size: 16px; }
+
+  body {
+    font-family: var(--font-bn);
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  header {
+    background: var(--accent);
+    padding: 20px 20px 18px;
+    text-align: center;
+  }
+
+  header h1 {
+    font-family: var(--font-bn);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #ffffff;
+    line-height: 1.4;
+  }
+
+  header p {
+    font-family: var(--font-en);
+    font-size: 0.82rem;
+    color: rgba(255,255,255,0.72);
+    margin-top: 4px;
+  }
+
+  main {
+    flex: 1;
+    max-width: 560px;
+    width: 100%;
+    margin: 0 auto;
+    padding: 20px 16px 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .card-header {
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .dot-green { width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--accent); }
+
+  .card-header h2 {
+    font-family: var(--font-bn);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .card-body { padding: 16px 18px; }
+
+  .input-group { margin-bottom: 14px; }
+  .input-group:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-family: var(--font-bn);
+    font-size: 0.83rem;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+
+  .input-wrapper { position: relative; display: flex; align-items: center; }
+
+  input[type="number"] {
+    width: 100%;
+    height: 46px;
+    padding: 0 50px 0 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-family: var(--font-en);
+    font-size: 1rem;
+    color: var(--text-primary);
+    background: var(--bg);
+    outline: none;
+    transition: border-color 0.18s, background 0.18s;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  input[type="number"]::-webkit-outer-spin-button,
+  input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+  input[type="number"]:focus { border-color: var(--accent); background: #fff; }
+
+  .input-suffix {
+    position: absolute;
+    right: 12px;
+    font-family: var(--font-bn);
+    font-size: 0.80rem;
+    color: var(--text-muted);
+    pointer-events: none;
+    font-weight: 600;
+  }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .btn-calculate {
+    width: 100%; height: 50px;
+    background: var(--accent); color: #fff;
+    border: none; border-radius: var(--radius);
+    font-family: var(--font-bn);
+    font-size: 1.05rem; font-weight: 700;
+    cursor: pointer;
+    transition: background 0.18s, transform 0.1s;
+    box-shadow: 0 2px 8px rgba(45,80,22,0.25);
+  }
+
+  .btn-calculate:active { transform: scale(0.98); background: #1e3a0f; }
+
+  .btn-reset {
+    width: 100%; height: 42px;
+    background: transparent; color: var(--text-secondary);
+    border: 1.5px solid var(--border); border-radius: var(--radius);
+    font-family: var(--font-bn); font-size: 0.90rem; font-weight: 600;
+    cursor: pointer; transition: border-color 0.18s, color 0.18s;
+  }
+
+  .btn-reset:active { border-color: var(--accent); color: var(--accent); }
+
+  #result-section { display: none; flex-direction: column; gap: 12px; }
+  #result-section.visible { display: flex; }
+
+  .breakdown-card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+
+  .breakdown-header {
+    padding: 12px 18px;
+    display: flex; align-items: center; gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .breakdown-title { font-family: var(--font-bn); font-size: 0.92rem; font-weight: 700; }
+
+  .vat-header { background: var(--vat-light); }
+  .vat-title  { color: var(--vat-color); }
+  .dot-vat    { width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--vat-color); }
+
+  .tax-header { background: var(--tax-light); }
+  .tax-title  { color: var(--tax-color); }
+  .dot-tax    { width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--tax-color); }
+
+  .breakdown-rows { padding: 4px 0; }
+
+  .breakdown-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 18px;
+    border-bottom: 1px solid var(--border);
+    gap: 12px;
+  }
+  .breakdown-row:last-child { border-bottom: none; }
+
+  .row-label {
+    font-family: var(--font-bn);
+    font-size: 0.83rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    flex: 1;
+  }
+
+  .row-value {
+    font-family: var(--font-bn);
+    font-size: 0.94rem; font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+  }
+
+  .highlight-vat { color: var(--vat-color); }
+  .highlight-tax { color: var(--tax-color); }
+
+  .badge {
+    display: inline-block; border-radius: 4px; padding: 1px 7px;
+    font-family: var(--font-en); font-size: 0.72rem; font-weight: 700;
+  }
+  .vat-badge { background: var(--vat-light); color: var(--vat-color); }
+  .tax-badge { background: var(--tax-light); color: var(--tax-color); }
+
+  /* Summary */
+  .summary-card {
+    background: var(--result-bg);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+
+  .summary-header {
+    padding: 13px 18px 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .summary-header h3 {
+    font-family: var(--font-bn);
+    font-size: 0.90rem; font-weight: 700;
+    color: rgba(255,255,255,0.6);
+  }
+
+  .summary-body { padding: 6px 18px 16px; }
+
+  .summary-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 9px 0; gap: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .summary-row:last-child {
+    border-bottom: none;
+    border-top: 1px solid rgba(255,255,255,0.14);
+    padding-top: 13px; margin-top: 4px;
+  }
+
+  .summary-label {
+    font-family: var(--font-bn);
+    font-size: 0.83rem; color: rgba(255,255,255,0.55);
+    line-height: 1.4; flex: 1;
+  }
+
+  .summary-value {
+    font-family: var(--font-bn);
+    font-size: 0.92rem; font-weight: 700;
+    color: rgba(255,255,255,0.85);
+    white-space: nowrap;
+  }
+
+  .summary-row:last-child .summary-label {
+    font-size: 0.90rem; color: rgba(255,255,255,0.82); font-weight: 700;
+  }
+  .summary-row:last-child .summary-value {
+    font-size: 1.10rem; color: #a8d08d; font-weight: 700;
+  }
+
+  /* Footer */
+  footer {
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    padding: 20px 20px 30px;
+    text-align: center;
+  }
+
+  .footer-label {
+    font-family: var(--font-bn);
+    font-size: 0.72rem; color: var(--text-muted);
+    margin-bottom: 8px; letter-spacing: 0.04em; text-transform: uppercase;
+  }
+
+  .footer-name {
+    font-family: var(--font-bn);
+    font-size: 1.10rem; font-weight: 700;
+    color: var(--accent); margin-bottom: 4px;
+  }
+
+  .footer-role {
+    font-family: var(--font-bn);
+    font-size: 0.82rem; color: var(--text-secondary);
+    line-height: 1.7; margin-bottom: 10px;
+  }
+
+  .footer-mobile {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: var(--font-en);
+    font-size: 0.85rem; color: var(--text-muted);
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 14px;
+  }
+
+  @media (max-width: 380px) {
+    header h1 { font-size: 1.15rem; }
+    .two-col { grid-template-columns: 1fr; }
+  }
+
+  @media (min-width: 560px) {
+    main { padding: 28px 24px 40px; }
+    header { padding: 26px 24px 22px; }
+    header h1 { font-size: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>ভ্যাট ও আয়কর ক্যালকুলেটর</h1>
+  <p>NBR Prescribed Calculation Method</p>
+</header>
+
+<main>
+
+  <!-- Input Card -->
+  <div class="card">
+    <div class="card-header">
+      <span class="dot-green"></span>
+      <h2>ইনপুট তথ্য</h2>
+    </div>
+    <div class="card-body">
+      <div class="input-group">
+        <label>মোট টাকার পরিমান (ভ্যাট ও আয়কর সহ)</label>
+        <div class="input-wrapper">
+          <input type="number" id="totalBill" min="0" step="0.01">
+          <span class="input-suffix">টাকা</span>
+        </div>
+      </div>
+      <div class="two-col">
+        <div class="input-group">
+          <label>ভ্যাট হার</label>
+          <div class="input-wrapper">
+            <input type="number" id="vatRate" min="0" max="100" step="0.01">
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+        <div class="input-group">
+          <label>আয়কর হার</label>
+          <div class="input-wrapper">
+            <input type="number" id="taxRate" min="0" max="100" step="0.01">
+            <span class="input-suffix">%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-calculate" onclick="calculate()">হিসাব করুন</button>
+
+  <!-- Results -->
+  <div id="result-section">
+
+    <!-- VAT -->
+    <div class="breakdown-card">
+      <div class="breakdown-header vat-header">
+        <span class="dot-vat"></span>
+        <span class="breakdown-title vat-title">ভ্যাট নিরূপণ বিবরণী</span>
+        <span class="badge vat-badge" id="vat-rate-badge"></span>
+      </div>
+      <div class="breakdown-rows">
+        <div class="breakdown-row">
+          <span class="row-label">পরিশোধযোগ্য মোট বিল — ভ্যাট ও আয়করসহ (ক)</span>
+          <span class="row-value" id="r-A"></span>
+        </div>
+        <div class="breakdown-row">
+          <span class="row-label">ভ্যাট কর্তন (খ)</span>
+          <span class="row-value highlight-vat" id="r-B"></span>
+        </div>
+        <div class="breakdown-row">
+          <span class="row-label">ভিত্তিমূল্য — ভ্যাট বাদে বিল (গ = ক − খ)</span>
+          <span class="row-value" id="r-C"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tax -->
+    <div class="breakdown-card">
+      <div class="breakdown-header tax-header">
+        <span class="dot-tax"></span>
+        <span class="breakdown-title tax-title">আয়কর নিরূপণ বিবরণী</span>
+        <span class="badge tax-badge" id="tax-rate-badge"></span>
+      </div>
+      <div class="breakdown-rows">
+        <div class="breakdown-row">
+          <span class="row-label">ভিত্তিমূল্য (গ)</span>
+          <span class="row-value" id="r-C2"></span>
+        </div>
+        <div class="breakdown-row">
+          <span class="row-label">আয়কর কর্তন (ঘ = গ × আয়কর হার)</span>
+          <span class="row-value highlight-tax" id="r-D"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-card">
+      <div class="summary-header">
+        <h3>সারসংক্ষেপ</h3>
+      </div>
+      <div class="summary-body">
+        <div class="summary-row">
+          <span class="summary-label">মোট বিল (ক)</span>
+          <span class="summary-value" id="s-A"></span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">ভ্যাট কর্তন (খ)</span>
+          <span class="summary-value" id="s-B" style="color:#7ab3e0;"></span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">আয়কর কর্তন (ঘ)</span>
+          <span class="summary-value" id="s-D" style="color:#e07a7a;"></span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">মোট ভ্যাট ও আয়কর (খ + ঘ)</span>
+          <span class="summary-value" id="s-BD" style="color:#f0c070;"></span>
+        </div>
+        <div class="summary-row">
+          <span class="summary-label">বিক্রেতাকে প্রদানযোগ্য টাকা (ঙ = ক − খ − ঘ)</span>
+          <span class="summary-value" id="s-E"></span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn-reset" onclick="reset()">পুনরায় হিসাব করুন</button>
+
+  </div>
+</main>
+
+<footer>
+  <div class="footer-label">এই টুলসটি তৈরী করেছেন</div>
+  <div class="footer-name">তৌকির আহামেদ</div>
+  <div class="footer-role">
+    প্রভাষক<br>
+    এগ্রিকালচারাল ইকোনমিক্স সেকশন<br>
+    অ্যালাইড স্যায়েন্সেস বিভাগ<br>
+    হবিগঞ্জ কৃষি বিশ্ববিদ্যালয়
+  </div>
+  <div class="footer-mobile">📞 ০১৯৪৮৬৩০২৩০</div>
+</footer>
+
+<script>
+  const BN = ['০','১','২','৩','৪','৫','৬','৭','৮','৯'];
+
+  function toBn(str) {
+    return String(str).replace(/[0-9]/g, d => BN[+d]);
+  }
+
+  function fmt(n) {
+    const fixed = n.toFixed(2);
+    const [intPart, decPart] = fixed.split('.');
+    const intComma = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    return toBn(intComma + '.' + decPart) + ' টাকা';
+  }
+
+  function fmtPct(n) {
+    // Remove trailing zeros for the badge display
+    const s = parseFloat(n.toFixed(2)).toString();
+    return toBn(s) + '%';
+  }
+
+  function calculate() {
+    const A       = parseFloat(document.getElementById('totalBill').value);
+    const vatRate = parseFloat(document.getElementById('vatRate').value);
+    const taxRate = parseFloat(document.getElementById('taxRate').value);
+
+    if (isNaN(A) || A <= 0) {
+      alert('মোট টাকার পরিমান সঠিকভাবে দিন।'); return;
+    }
+    if (isNaN(vatRate) || vatRate < 0) {
+      alert('ভ্যাট হার সঠিকভাবে দিন।'); return;
+    }
+    if (isNaN(taxRate) || taxRate < 0) {
+      alert('আয়কর হার সঠিকভাবে দিন।'); return;
+    }
+
+    // B = A × vatRate / (100 + vatRate)
+    const B  = A * vatRate / (100 + vatRate);
+    // C = A - B
+    const C  = A - B;
+    // D = C × taxRate / 100
+    const D  = C * taxRate / 100;
+    // E = A - B - D
+    const E  = A - B - D;
+    const BD = B + D;
+
+    document.getElementById('vat-rate-badge').textContent = fmtPct(vatRate);
+    document.getElementById('r-A').textContent = fmt(A);
+    document.getElementById('r-B').textContent = fmt(B);
+    document.getElementById('r-C').textContent = fmt(C);
+
+    document.getElementById('tax-rate-badge').textContent = fmtPct(taxRate);
+    document.getElementById('r-C2').textContent = fmt(C);
+    document.getElementById('r-D').textContent  = fmt(D);
+
+    document.getElementById('s-A').textContent  = fmt(A);
+    document.getElementById('s-B').textContent  = fmt(B);
+    document.getElementById('s-D').textContent  = fmt(D);
+    document.getElementById('s-BD').textContent = fmt(BD);
+    document.getElementById('s-E').textContent  = fmt(E);
+
+    const section = document.getElementById('result-section');
+    section.classList.add('visible');
+    setTimeout(() => section.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+  }
+
+  function reset() {
+    ['totalBill','vatRate','taxRate'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('result-section').classList.remove('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') calculate(); });
+</script>
+
+</body>
+</html>

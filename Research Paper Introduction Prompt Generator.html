@@ -1,0 +1,692 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Introduction Prompt Generator</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #0d0d11;
+  --surface: #13131a;
+  --card: #1a1a24;
+  --border: #252535;
+  --border2: #2e2e42;
+  --gold: #c8993a;
+  --gold-dim: #8a6820;
+  --gold-bg: rgba(200,153,58,.1);
+  --green: #3a9e6e;
+  --green-bg: rgba(58,158,110,.1);
+  --text: #e8e4dc;
+  --muted: #7a7488;
+  --faint: #383548;
+  --label: #a09898;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}
+
+/* HEADER */
+header {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 1.8rem 1.5rem 1.5rem;
+  text-align: center;
+}
+header h1 {
+  font-family: 'Lora', serif;
+  font-size: clamp(1.3rem, 3.5vw, 2rem);
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: .3rem;
+}
+header h1 span { color: var(--gold); }
+header p {
+  font-size: .82rem;
+  color: var(--muted);
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+/* LAYOUT */
+.container { max-width: 780px; margin: 0 auto; padding: 2rem 1.2rem; }
+
+/* STEP CARD */
+.step {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-bottom: 1rem;
+  overflow: hidden;
+  transition: border-color .2s;
+}
+.step:focus-within { border-color: var(--gold-dim); }
+
+.step-head {
+  display: flex;
+  align-items: center;
+  gap: .75rem;
+  padding: .85rem 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+.step-num {
+  width: 26px; height: 26px;
+  border-radius: 50%;
+  background: var(--gold-dim);
+  color: #fff;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .65rem;
+  font-weight: 500;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.step-title {
+  font-size: .88rem;
+  font-weight: 600;
+  color: var(--text);
+  flex: 1;
+}
+.step-badge {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .58rem;
+  letter-spacing: .1em;
+  padding: .15rem .5rem;
+  border-radius: 20px;
+  flex-shrink: 0;
+}
+.req { background: rgba(200,153,58,.15); color: var(--gold); border: 1px solid var(--gold-dim); }
+.opt { background: rgba(58,158,110,.1); color: var(--green); border: 1px solid rgba(58,158,110,.3); }
+
+.step-body { padding: 1rem 1.1rem; }
+
+/* LABELS & HINTS */
+.field-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: .62rem;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .4rem;
+  display: block;
+}
+.field-hint {
+  font-size: .75rem;
+  color: var(--muted);
+  margin-bottom: .55rem;
+  line-height: 1.55;
+}
+
+/* INPUTS */
+input[type=text], textarea, select {
+  width: 100%;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 8px;
+  padding: .7rem .9rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .85rem;
+  color: var(--text);
+  outline: none;
+  transition: border-color .2s;
+  resize: vertical;
+}
+input[type=text]:focus, textarea:focus, select:focus {
+  border-color: var(--gold-dim);
+}
+input::placeholder, textarea::placeholder {
+  color: var(--faint);
+  font-style: italic;
+}
+select { cursor: pointer; }
+select option { background: var(--card); }
+
+textarea.tall { min-height: 110px; }
+textarea.xtall { min-height: 150px; }
+
+/* TWO-COL */
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .8rem;
+}
+@media(max-width: 520px) { .row2 { grid-template-columns: 1fr; } }
+
+/* SPACER */
+.spacer { margin-top: .75rem; }
+
+/* RADIO GROUP */
+.radio-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .5rem;
+  margin-top: .2rem;
+}
+.radio-group label {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 7px;
+  padding: .4rem .75rem;
+  font-size: .8rem;
+  color: var(--label);
+  cursor: pointer;
+  transition: all .18s;
+}
+.radio-group input[type=radio] { accent-color: var(--gold); }
+.radio-group label:has(input:checked) {
+  border-color: var(--gold-dim);
+  background: var(--gold-bg);
+  color: var(--gold);
+}
+
+/* GENERATE BUTTON */
+.gen-btn {
+  width: 100%;
+  background: var(--gold);
+  color: #0d0d11;
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 700;
+  font-size: .95rem;
+  padding: .85rem;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all .2s;
+  margin: 1.5rem 0 .5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+}
+.gen-btn:hover {
+  background: #dba83f;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 24px rgba(200,153,58,.35);
+}
+.gen-btn:active { transform: none; }
+
+/* OUTPUT AREA */
+.output-section {
+  display: none;
+  animation: fadeUp .4s ease;
+}
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+.output-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: .75rem;
+  flex-wrap: wrap;
+  gap: .5rem;
+}
+.output-header h2 {
+  font-family: 'Lora', serif;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--gold);
+}
+.copy-btn {
+  display: flex;
+  align-items: center;
+  gap: .4rem;
+  background: var(--gold-bg);
+  border: 1px solid var(--gold-dim);
+  color: var(--gold);
+  font-family: 'DM Sans', sans-serif;
+  font-weight: 600;
+  font-size: .8rem;
+  padding: .5rem 1rem;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all .18s;
+}
+.copy-btn:hover { background: rgba(200,153,58,.2); }
+.copy-btn.ok { color: var(--green); border-color: var(--green); background: var(--green-bg); }
+
+.output-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  padding: 1.4rem 1.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: .83rem;
+  line-height: 1.85;
+  color: var(--text);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 520px;
+  overflow-y: auto;
+}
+.output-box::-webkit-scrollbar { width: 4px; }
+.output-box::-webkit-scrollbar-track { background: var(--border); }
+.output-box::-webkit-scrollbar-thumb { background: var(--gold-dim); border-radius: 2px; }
+
+.note {
+  font-size: .75rem;
+  color: var(--muted);
+  text-align: center;
+  margin-top: .6rem;
+  line-height: 1.6;
+}
+.note strong { color: var(--gold); }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Introduction <span>Prompt</span> Generator</h1>
+  <p>Fill in your research details → Generate a ready-to-use Claude prompt → Get a journal-ready Introduction</p>
+</header>
+
+<div class="container">
+
+  <!-- STEP 1: BASIC INFO -->
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">1</div>
+      <span class="step-title">Paper & Journal Information</span>
+      <span class="step-badge req">Required</span>
+    </div>
+    <div class="step-body">
+      <label class="field-label">Full Paper Title</label>
+      <p class="field-hint">Your complete manuscript title exactly as it will appear.</p>
+      <input type="text" id="title" placeholder="e.g. Agricultural Mechanisation and Household Well-being in Haor Ecosystems of Bangladesh: A DiD Approach"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Target Journal</label>
+      <p class="field-hint">Journal name, publisher, and any style notes (e.g. APA 7th, SSCI).</p>
+      <input type="text" id="journal" placeholder="e.g. Discover Sustainability, Springer, SSCI, APA 7th edition"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Writing Voice</label>
+      <div class="radio-group">
+        <label><input type="radio" name="voice" value="third" checked/> Third person passive ("The present study…")</label>
+        <label><input type="radio" name="voice" value="first"/> First person active ("We examined…")</label>
+      </div>
+
+      <div class="spacer"></div>
+      <label class="field-label">Target Word Count</label>
+      <div class="radio-group">
+        <label><input type="radio" name="words" value="600–800" checked/> 600–800 words</label>
+        <label><input type="radio" name="words" value="800–1,000"/> 800–1,000 words</label>
+        <label><input type="radio" name="words" value="1,000–1,200"/> 1,000–1,200 words</label>
+        <label><input type="radio" name="words" value="1,200–1,500"/> 1,200–1,500 words</label>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 2: CONTEXT -->
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">2</div>
+      <span class="step-title">Study Context & Background</span>
+      <span class="step-badge req">Required</span>
+    </div>
+    <div class="step-body">
+      <label class="field-label">Study Area / Population / Setting</label>
+      <p class="field-hint">Describe your study location, target population, ecosystem, economic context, and any relevant background statistics or policy environment. Be specific.</p>
+      <textarea class="xtall" id="context" placeholder="e.g. This study is set in the haor wetland ecosystem of northeastern Bangladesh (Sylhet division), covering approximately 8,566 km². About 85% of households depend on single-season Boro rice. Agricultural mechanisation has been promoted under the Bangladesh National Agricultural Mechanization Policy (2020). The region experiences severe seasonal flooding from May to October..."></textarea>
+    </div>
+  </div>
+
+  <!-- STEP 3: LITERATURE -->
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">3</div>
+      <span class="step-title">Literature & References</span>
+      <span class="step-badge req">Required</span>
+    </div>
+    <div class="step-body">
+      <label class="field-label">Key References (APA 7th format)</label>
+      <p class="field-hint">Paste all the references you want embedded in the Introduction. Include at least 8–15 references. Claude will weave them naturally across the literature review paragraphs — moving from global/foundational → to recent → to context-specific.</p>
+      <textarea class="xtall" id="literature" placeholder="Rahman, M., Islam, S., & Hossain, A. (2021). Smallholder efficiency in haor areas. Agricultural Economics, 15(2), 100–120.&#10;FAO. (2022). State of food security report. Food and Agriculture Organization.&#10;World Bank. (2023). World development report. World Bank Group.&#10;Smith, J., & Jones, B. (2019). Agricultural technology adoption. Journal of Development Economics, 45(1), 1–30.&#10;(paste more references here...)"></textarea>
+
+      <div class="spacer"></div>
+      <label class="field-label">Methodological References (if any — optional)</label>
+      <p class="field-hint">References specifically related to your method (e.g. DiD, SFA, DEA, regression). Claude will use these in the methodological review paragraph.</p>
+      <textarea class="tall" id="methLit" placeholder="e.g. Angrist, J. D., & Pischke, J. S. (2009). Mostly harmless econometrics. Princeton University Press.&#10;Coelli, T., et al. (2005). An introduction to efficiency analysis. Springer."></textarea>
+    </div>
+  </div>
+
+  <!-- STEP 4: GAPS -->
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">4</div>
+      <span class="step-title">Research Gaps</span>
+      <span class="step-badge req">Required</span>
+    </div>
+    <div class="step-body">
+      <p class="field-hint" style="margin-bottom:.75rem;">State exactly what prior studies have NOT done. Each gap must be specific — not "more research is needed." Link each gap to a citation from Step 3.</p>
+
+      <label class="field-label">Gap 1</label>
+      <input type="text" id="gap1" placeholder="e.g. Most studies focus on crop efficiency but aquaculture in haor areas remains unexplored (cf. Rahman et al., 2021)"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Gap 2</label>
+      <input type="text" id="gap2" placeholder="e.g. No prior DiD study examines heterogeneous effects across gender and land tenure in Bangladesh's haor region"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Gap 3</label>
+      <input type="text" id="gap3" placeholder="e.g. Existing mechanisation studies ignore seasonal flood cycles as a confounding variable"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Gap 4 (optional)</label>
+      <input type="text" id="gap4" placeholder="Add a 4th gap if needed…"/>
+    </div>
+  </div>
+
+  <!-- STEP 5: OBJECTIVES -->
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">5</div>
+      <span class="step-title">Research Objectives</span>
+      <span class="step-badge req">Required</span>
+    </div>
+    <div class="step-body">
+      <p class="field-hint" style="margin-bottom:.75rem;">Each objective must directly answer one gap above. Write them exactly as they will appear in your paper.</p>
+
+      <label class="field-label">Objective 1 (answers Gap 1)</label>
+      <input type="text" id="obj1" placeholder="e.g. To estimate the effect of agricultural mechanisation on household income using a DiD framework"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Objective 2 (answers Gap 2)</label>
+      <input type="text" id="obj2" placeholder="e.g. To examine heterogeneous effects across farm size, gender, and land tenure status"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Objective 3 (answers Gap 3)</label>
+      <input type="text" id="obj3" placeholder="e.g. To derive evidence-based policy recommendations for mechanisation in flood-prone ecosystems"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Objective 4 (optional)</label>
+      <input type="text" id="obj4" placeholder="Add a 4th objective if needed…"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Methodology (1–2 sentences)</label>
+      <p class="field-hint">Briefly describe your data, method, and research design.</p>
+      <textarea id="method" placeholder="e.g. This study employs a Difference-in-Differences (DiD) design using panel household survey data collected from 420 farming households across four haor upazillas in 2019 and 2023. Propensity score matching is applied to address selection bias in mechanisation adoption."></textarea>
+    </div>
+  </div>
+
+  <!-- STEP 6: CONTRIBUTIONS -->
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">6</div>
+      <span class="step-title">Study Contributions</span>
+      <span class="step-badge req">Required</span>
+    </div>
+    <div class="step-body">
+      <p class="field-hint" style="margin-bottom:.75rem;">This becomes ¶6 — the "So What?" paragraph. Be specific. Use "first" if your study genuinely is the first.</p>
+
+      <label class="field-label">Theoretical Contribution</label>
+      <input type="text" id="contrib1" placeholder="e.g. Extends the sustainable livelihood framework by incorporating ecosystem fragility as a structural variable"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Empirical Contribution</label>
+      <input type="text" id="contrib2" placeholder="e.g. Provides the first panel-based DiD estimates for haor smallholders in Sylhet division"/>
+
+      <div class="spacer"></div>
+      <label class="field-label">Policy Contribution</label>
+      <input type="text" id="contrib3" placeholder="e.g. Findings inform targeted mechanisation subsidy design for flood-vulnerable smallholders in Bangladesh"/>
+    </div>
+  </div>
+
+  <!-- STEP 7: STRUCTURE -->
+  <div class="step">
+    <div class="step-head">
+      <div class="step-num">7</div>
+      <span class="step-title">Paper Section Titles</span>
+      <span class="step-badge opt">Optional</span>
+    </div>
+    <div class="step-body">
+      <p class="field-hint" style="margin-bottom:.75rem;">Used for the roadmap sentence (¶7). Leave blank for a generic structure.</p>
+      <div class="row2">
+        <div>
+          <label class="field-label">Section 2</label>
+          <input type="text" id="sec2" placeholder="e.g. Theoretical Framework"/>
+        </div>
+        <div>
+          <label class="field-label">Section 3</label>
+          <input type="text" id="sec3" placeholder="e.g. Data & Methodology"/>
+        </div>
+        <div>
+          <label class="field-label">Section 4</label>
+          <input type="text" id="sec4" placeholder="e.g. Results and Discussion"/>
+        </div>
+        <div>
+          <label class="field-label">Section 5</label>
+          <input type="text" id="sec5" placeholder="e.g. Conclusion & Policy Implications"/>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GENERATE BUTTON -->
+  <button class="gen-btn" onclick="generatePrompt()">
+    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
+    Generate My Claude Prompt
+  </button>
+
+  <!-- OUTPUT -->
+  <div class="output-section" id="outputSection">
+    <div class="output-header">
+      <h2>✦ Your Claude Prompt is Ready</h2>
+      <button class="copy-btn" id="copyBtn" onclick="copyPrompt()">
+        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy Prompt
+      </button>
+    </div>
+    <div class="output-box" id="outputBox"></div>
+    <p class="note">Copy this prompt → Open Claude → Paste → Send. Claude will write your <strong>journal-ready Introduction</strong>.<br/>You can then ask Claude to refine specific paragraphs.</p>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+function radioVal(name) {
+  const checked = document.querySelector(`input[name="${name}"]:checked`);
+  return checked ? checked.value : '';
+}
+
+function generatePrompt() {
+  // Collect values
+  const title    = val('title');
+  const journal  = val('journal');
+  const voice    = radioVal('voice');
+  const words    = radioVal('words');
+  const context  = val('context');
+  const lit      = val('literature');
+  const methLit  = val('methLit');
+  const gap1     = val('gap1');
+  const gap2     = val('gap2');
+  const gap3     = val('gap3');
+  const gap4     = val('gap4');
+  const obj1     = val('obj1');
+  const obj2     = val('obj2');
+  const obj3     = val('obj3');
+  const obj4     = val('obj4');
+  const method   = val('method');
+  const c1       = val('contrib1');
+  const c2       = val('contrib2');
+  const c3       = val('contrib3');
+  const sec2     = val('sec2') || 'Theoretical Framework and Literature Review';
+  const sec3     = val('sec3') || 'Data, Study Area, and Methodology';
+  const sec4     = val('sec4') || 'Results and Discussion';
+  const sec5     = val('sec5') || 'Conclusion and Policy Implications';
+
+  // Validation
+  if (!title || !journal || !lit || !gap1 || !obj1) {
+    alert('Please fill in at least: Paper Title, Journal, Literature, Gap 1, and Objective 1.');
+    return;
+  }
+
+  // Build gaps block
+  const gaps = [gap1, gap2, gap3, gap4].filter(Boolean);
+  const gapsBlock = gaps.map((g, i) => `Gap ${i+1}: ${g}`).join('\n');
+
+  // Build objectives block
+  const objs = [obj1, obj2, obj3, obj4].filter(Boolean);
+  const objsBlock = objs.map((o, i) => `(${['i','ii','iii','iv'][i]}) ${o}`).join('\n');
+
+  // Voice instruction
+  const voiceInstr = voice === 'first'
+    ? 'Use first person active voice throughout ("We examined...", "We aim to...").'
+    : 'Use third person passive voice throughout ("The present study examines...", "This paper aims to...").';
+
+  // Method lit block
+  const methBlock = methLit
+    ? `\nMethodological References (use in ¶3 when reviewing the analytical framework):\n${methLit}`
+    : '';
+
+  // Contributions
+  const contribLines = [
+    c1 ? `Theoretical: ${c1}` : null,
+    c2 ? `Empirical: ${c2}` : null,
+    c3 ? `Policy: ${c3}` : null,
+  ].filter(Boolean).join('\n');
+
+  // Build the prompt
+  const prompt = `You are an expert academic writer specialising in high-impact journal publications in agricultural economics, development economics, and sustainability science.
+
+Write a complete, journal-ready INTRODUCTION section for the manuscript described below. Follow the CARS model (Swales, 1990) — three rhetorical Moves across exactly 7 paragraphs. Embed the literature review naturally within Move 1. The output must be immediately submittable to the target journal with no structural revisions needed.
+
+═══════════════════════════════════
+MANUSCRIPT DETAILS
+═══════════════════════════════════
+
+Title: ${title}
+
+Target Journal: ${journal}
+
+Voice & Style: ${voiceInstr}
+
+Target Word Count: ${words} words total for the Introduction.
+
+═══════════════════════════════════
+STUDY CONTEXT & SETTING
+═══════════════════════════════════
+
+${context || '[No context provided — use only information derivable from the title and literature.]'}
+
+═══════════════════════════════════
+LITERATURE TO EMBED (APA 7th)
+═══════════════════════════════════
+
+Integrate the following references naturally across ¶1–¶3. Do NOT list them. Cite them in-text as you make claims, moving from global/foundational studies → to recent empirical work → to context-specific literature.
+
+${lit}${methBlock}
+
+═══════════════════════════════════
+RESEARCH GAPS (for ¶4)
+═══════════════════════════════════
+
+${gapsBlock}
+
+═══════════════════════════════════
+OBJECTIVES & METHODOLOGY (for ¶5)
+═══════════════════════════════════
+
+Objectives:
+${objsBlock}
+
+${method ? `Methodology: ${method}` : ''}
+
+═══════════════════════════════════
+STUDY CONTRIBUTIONS (for ¶6)
+═══════════════════════════════════
+
+${contribLines || '[Derive contributions logically from the gaps and objectives above.]'}
+
+═══════════════════════════════════
+PARAGRAPH-BY-PARAGRAPH INSTRUCTIONS
+═══════════════════════════════════
+
+Write exactly these 7 paragraphs in order. Do not use subheadings inside the Introduction.
+
+¶1 — OPENING HOOK [Move 1]
+Assert the global or societal importance of the broad research field. Cite 2–3 authoritative global sources (FAO, World Bank, IPCC, etc.) from the reference list. Make the first sentence compelling and factual. Never begin with a dictionary definition.
+
+¶2 — THEMATIC LITERATURE REVIEW [Move 1 — Embedded Lit Review]
+This paragraph IS the literature review. Summarise what scholars have established about the specific topic, moving from classic/foundational studies to recent work. Cite 4–7 references. Use present perfect tense ("studies have shown…", "scholars have demonstrated…", "research has established…").
+
+¶3 — METHODOLOGICAL & CONTEXTUAL REVIEW [Move 1 — Narrowing]
+Review the methods or analytical frameworks used by prior scholars. Then narrow to the specific geographic or sectoral context of this study. Use the context-specific references and methodological references provided. Remain neutral — no criticism yet.
+
+¶4 — RESEARCH GAP [Move 2 — THE PIVOT]
+Begin: "Despite this growing body of evidence, several important gaps remain in the literature."
+Use "First… Second… Third…" structure. Each gap must use different gap-signalling language ("remains limited", "has yet to be examined", "has received little empirical attention", "no prior study has…"). Every gap must trace back to a citation from ¶2 or ¶3.
+
+¶5 — PURPOSE, OBJECTIVES & METHOD [Move 3, Step 1]
+Begin: "Against this backdrop, ${voice === 'first' ? 'this study aims to' : 'the present study aims to'}…"
+State the main purpose, then list objectives as (i)… (ii)… (iii)… Each objective directly answers one gap from ¶4. Briefly mention the methodological approach.
+
+¶6 — CONTRIBUTION TO KNOWLEDGE [Move 3, Step 2]
+Begin: "This study makes several contributions to the existing literature."
+Separate theoretical, empirical, and policy contributions. Use hedged-confident language: "provides the first…", "extends the framework of…", "offers new evidence on…". This paragraph must be specific and compelling — reviewers use it to decide desk-rejection.
+
+¶7 — PAPER ORGANISATION [Move 3, Step 3]
+Begin: "The remainder of the paper is organised as follows."
+Section 2 ${sec2}. Section 3 ${sec3}. Section 4 ${sec4}. Section 5 ${sec5}. Keep to 2–3 sentences.
+
+═══════════════════════════════════
+LANGUAGE RULES
+═══════════════════════════════════
+
+- APA 7th edition in-text citations: (Author, Year) or Author (Year)
+- Present perfect for literature: "have shown", "have found", "have demonstrated"
+- Present simple for facts: "Bangladesh is…", "haor areas cover…"
+- Present tense for this study: "the present study aims to…", "this paper examines…"
+- Past simple for specific named findings: "Smith et al. (2021) found that…"
+- No contractions, no bullet points inside paragraphs, no subheadings
+- Each paragraph must flow logically into the next with smooth transitions
+- Total output: ${words} words
+
+Now write the complete Introduction.`;
+
+  // Show output
+  document.getElementById('outputBox').textContent = prompt;
+  document.getElementById('outputSection').style.display = 'block';
+  document.getElementById('copyBtn').textContent = 'Copy Prompt';
+  document.getElementById('copyBtn').className = 'copy-btn';
+  setTimeout(() => {
+    document.getElementById('outputSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, 100);
+}
+
+function copyPrompt() {
+  const text = document.getElementById('outputBox').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.getElementById('copyBtn');
+    btn.innerHTML = '✓ Copied!';
+    btn.classList.add('ok');
+    setTimeout(() => {
+      btn.innerHTML = '<svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy Prompt';
+      btn.classList.remove('ok');
+    }, 2500);
+  }).catch(() => {
+    const ta = document.createElement('textarea');
+    ta.value = text; ta.style.position = 'fixed'; ta.style.opacity = '0';
+    document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = '✓ Copied!'; btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy Prompt'; btn.classList.remove('ok'); }, 2500);
+  });
+}
+</script>
+</body>
+</html>

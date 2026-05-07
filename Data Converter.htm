@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Data Formatter</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 800px;
+        }
+        h2 { color: #333; margin-top: 0; }
+        textarea {
+            width: 100%;
+            height: 200px;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+            resize: vertical;
+        }
+        .controls {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .btn-convert { background-color: #007bff; color: white; }
+        .btn-convert:hover { background-color: #0056b3; }
+        .btn-copy { background-color: #28a745; color: white; }
+        .btn-copy:hover { background-color: #218838; }
+        .output-header {
+            margin-top: 20px;
+            font-weight: bold;
+            color: #555;
+        }
+        #output {
+            background-color: #f9f9f9;
+            border: 1px solid #eee;
+            padding: 15px;
+            white-space: pre-wrap;
+            min-height: 50px;
+            border-radius: 4px;
+            margin-top: 10px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Student Data Formatter</h2>
+    <p>Paste the raw student names, reg, and IDs below:</p>
+    
+    <textarea id="inputData" placeholder="Paste data here..."></textarea>
+    
+    <div class="controls">
+        <button class="btn-convert" onclick="convertData()">Convert Format</button>
+        <button class="btn-copy" onclick="copyToClipboard()">Copy Result</button>
+    </div>
+
+    <div class="output-header">Formatted Result:</div>
+    <div id="output"></div>
+</div>
+
+<script>
+    function convertData() {
+        const input = document.getElementById('inputData').value;
+        const outputDiv = document.getElementById('output');
+        
+        // Split by lines and remove empty lines or lines with only whitespace
+        const lines = input.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+        
+        let result = [];
+        // Process in chunks of 3 (Name, Reg, ID)
+        for (let i = 0; i < lines.length; i += 3) {
+            const name = lines[i] || "";
+            const reg = lines[i+1] || "";
+            const id = lines[i+2] || "";
+            
+            if (name && reg && id) {
+                result.push(`${name}, ${reg}, ${id}`);
+            }
+        }
+        
+        outputDiv.innerText = result.join('\n');
+    }
+
+    function copyToClipboard() {
+        const text = document.getElementById('output').innerText;
+        if (!text) return;
+        
+        navigator.clipboard.writeText(text).then(() => {
+            alert("Copied to clipboard!");
+        });
+    }
+</script>
+
+</body>
+</html>
